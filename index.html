@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Water Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #07111f;
+            color: white;
+        }
+
+        .app {
+            max-width: 500px;
+            margin: auto;
+            padding: 25px 18px 50px;
+        }
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .drop {
+            font-size: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .date {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* MAIN CARD */
+
+        .card {
+            background: #101c2d;
+            border: 1px solid #1e3148;
+            border-radius: 24px;
+            padding: 28px 22px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .today-label {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .water-total {
+            text-align: center;
+            font-size: 58px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .water-total span {
+            color: #38bdf8;
+        }
+
+        .goal {
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        /* PROGRESS */
+
+        .progress-container {
+            width: 100%;
+            height: 14px;
+            background: #1e293b;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 25px;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(
+                90deg,
+                #0284c7,
+                #38bdf8
+            );
+            border-radius: 20px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* ADD BUTTON */
+
+        .add-button {
+            width: 100%;
+            padding: 18px;
+            margin-top: 25px;
+            border: none;
+            border-radius: 16px;
+            background: #0284c7;
+            color: white;
+            font-size: 19px;
+            font-weight: bold;
+            box-shadow: 0 6px 15px rgba(2,132,199,0.25);
+        }
+
+        .add-button:active {
+            transform: scale(0.98);
+        }
+
+        /* TODAY'S HISTORY */
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .drink {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #101c2d;
+            border: 1px solid #1e3148;
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 8px;
+        }
+
+        .drink-time {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .drink-amount {
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .empty {
+            color: #64748b;
+            text-align: center;
+            padding: 20px;
+            background: #101c2d;
+            border-radius: 14px;
+        }
+
+        /* HISTORY */
+
+        .day-card {
+            background: #101c2d;
+            border: 1px solid #1e3148;
+            border-radius: 16px;
+            padding: 17px;
+            margin-bottom: 10px;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-name {
+            font-weight: bold;
+        }
+
+        .day-total {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .day-progress {
+            height: 7px;
+            background: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .day-progress-bar {
+            height: 100%;
+            background: #0284c7;
+            border-radius: 10px;
+        }
+
+        /* UNDO */
+
+        .undo-button {
+            display: block;
+            margin: 18px auto 0;
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .undo-button:active {
+            color: white;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="header-title">
+
+            <div class="drop">
+                💧
+            </div>
+
+            <div>
+                <h1>Water Tracker</h1>
+
+                <div class="date" id="currentDate">
+                    Today
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TODAY CARD -->
+
+    <div class="card">
+
+        <div class="today-label">
+            Today's Hydration
+        </div>
+
+        <div class="water-total">
+            <span id="waterTotal">0</span> oz
+        </div>
+
+        <div class="goal">
+            Goal: 100 oz
+        </div>
+
+
+        <!-- PROGRESS -->
+
+        <div class="progress-container">
+
+            <div
+                class="progress"
+                id="progress">
+            </div>
+
+        </div>
+
+        <div
+            class="progress-text"
+            id="progressText">
+            0% of daily goal
+        </div>
+
+
+        <!-- ADD WATER -->
+
+        <button
+            class="add-button"
+            onclick="addWater()">
+
+            + Add 24 oz
+
+        </button>
+
+    </div>
+
+
+    <!-- TODAY'S DRINKS -->
+
+    <div class="section">
+
+        <div class="section-title">
+            Today's Drinks
+        </div>
+
+        <div id="todayHistory">
+
+            <div class="empty">
+                No drinks yet
+            </div>
+
+        </div>
+
+        <button
+            class="undo-button"
+            onclick="undoLastDrink()">
+
+            ↩ Undo Last Drink
+
+        </button>
+
+    </div>
+
+
+    <!-- PREVIOUS DAYS -->
+
+    <div class="section">
+
+        <div class="section-title">
+            History
+        </div>
+
+        <div id="history">
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /*
+        WATER TRACKER
+        All data is stored locally
+        on your phone.
+    */
+
+
+    const DAILY_GOAL = 100;
+
+
+    // Load saved information
+
+    let data =
+        JSON.parse(
+            localStorage.getItem("waterTrackerData")
+        ) || {
+
+            days: {}
+
+        };
+
+
+    // Get today's date
+
+    function getTodayKey() {
+
+        const now = new Date();
+
+        const year =
+            now.getFullYear();
+
+        const month =
+            String(now.getMonth() + 1)
+            .padStart(2, "0");
+
+        const day =
+            String(now.getDate())
+            .padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+
+    }
+
+
+    // Make sure today exists
+
+    function ensureToday() {
+
+        const today =
+            getTodayKey();
+
+        if (!data.days[today]) {
+
+            data.days[today] = {
+
+                total: 0,
+
+                drinks: []
+
+            };
+
+            saveData();
+
+        }
+
+    }
+
+
+    // Save everything
+
+    function saveData() {
+
+        localStorage.setItem(
+            "waterTrackerData",
+            JSON.stringify(data)
+        );
+
+    }
+
+
+    // Get today's data
+
+    function getToday() {
+
+        ensureToday();
+
+        return data.days[getTodayKey()];
+
+    }
+
+
+    // Add water
+
+    function addWater() {
+
+        const today =
+            getToday();
+
+
+        today.total += 24;
+
+
+        const now =
+            new Date();
+
+
+        today.drinks.unshift({
+
+            amount: 24,
+
+            time:
+                now.toLocaleTimeString([], {
+
+                    hour: "numeric",
+
+                    minute: "2-digit"
+
+                })
+
+        });
+
+
+        saveData();
+
+        updateScreen();
+
+    }
+
+
+    // Undo last drink
+
+    function undoLastDrink() {
+
+        const today =
+            getToday();
+
+
+        if (today.drinks.length === 0) {
+
+            return;
+
+        }
+
+
+        const removed =
+            today.drinks.shift();
+
+
+        today.total -=
+            removed.amount;
+
+
+        saveData();
+
+        updateScreen();
+
+    }
+
+
+    // Format date
+
+    function formatDate(key) {
+
+        const parts =
+            key.split("-");
+
+
+        const date =
+            new Date(
+                Number(parts[0]),
+                Number(parts[1]) - 1,
+                Number(parts[2])
+            );
+
+
+        return date.toLocaleDateString([], {
+
+            weekday: "long",
+
+            month: "short",
+
+            day: "numeric"
+
+        });
+
+    }
+
+
+    // Update the entire screen
+
+    function updateScreen() {
+
+        ensureToday();
+
+
+        const today =
+            getToday();
+
+
+        /*
+            HEADER DATE
+        */
+
+        document.getElementById(
+            "currentDate"
+        ).textContent =
+            formatDate(getTodayKey());
+
+
+        /*
+            TOTAL
+        */
+
+        document.getElementById(
+            "waterTotal"
+        ).textContent =
+            today.total;
+
+
+        /*
+            PROGRESS
+        */
+
+        const percentage =
+            Math.min(
+                (today.total / DAILY_GOAL) * 100,
+                100
+            );
+
+
+        document.getElementById(
+            "progress"
+        ).style.width =
+            percentage + "%";
+
+
+        document.getElementById(
+            "progressText"
+        ).textContent =
+            Math.round(percentage) +
+            "% of daily goal";
+
+
+        /*
+            TODAY'S DRINKS
+        */
+
+        const todayHistory =
+            document.getElementById(
+                "todayHistory"
+            );
+
+
+        todayHistory.innerHTML = "";
+
+
+        if (today.drinks.length === 0) {
+
+            todayHistory.innerHTML = `
+                <div class="empty">
+                    No drinks yet
+                </div>
+            `;
+
+        } else {
+
+            today.drinks.forEach(drink => {
+
+                const element =
+                    document.createElement("div");
+
+
+                element.className =
+                    "drink";
+
+
+                element.innerHTML = `
+
+                    <span class="drink-time">
+                        ${drink.time}
+                    </span>
+
+                    <span class="drink-amount">
+                        +${drink.amount} oz
+                    </span>
+
+                `;
+
+
+                todayHistory.appendChild(
+                    element
+                );
+
+            });
+
+        }
+
+
+        /*
+            PREVIOUS DAYS
+        */
+
+        const history =
+            document.getElementById(
+                "history"
+            );
+
+
+        history.innerHTML = "";
+
+
+        const days =
+            Object.keys(data.days)
+                .filter(
+                    key => key !== getTodayKey()
+                )
+                .sort()
+                .reverse();
+
+
+        if (days.length === 0) {
+
+            history.innerHTML = `
+                <div class="empty">
+                    Your previous days
+                    will appear here.
+                </div>
+            `;
+
+        } else {
+
+            days.forEach(key => {
+
+                const day =
+                    data.days[key];
+
+
+                const percentage =
+                    Math.min(
+                        (day.total / DAILY_GOAL) * 100,
+                        100
+                    );
+
+
+                const element =
+                    document.createElement("div");
+
+
+                element.className =
+                    "day-card";
+
+
+                element.innerHTML = `
+
+                    <div class="day-header">
+
+                        <span class="day-name">
+                            ${formatDate(key)}
+                        </span>
+
+                        <span class="day-total">
+                            ${day.total} oz
+                        </span>
+
+                    </div>
+
+                    <div class="day-progress">
+
+                        <div
+                            class="day-progress-bar"
+                            style="width:${percentage}%">
+                        </div>
+
+                    </div>
+
+                `;
+
+
+                history.appendChild(
+                    element
+                );
+
+            });
+
+        }
+
+    }
+
+
+    // Start the app
+
+    updateScreen();
+
+</script>
+
+</body>
+</html>

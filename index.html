@@ -749,9 +749,21 @@
     }
 
 
-    // Start the app
+    // NFC / URL water addition
+const params = new URLSearchParams(window.location.search);
 
-    updateScreen();
+if (params.get("add") === "24") {
+    addWater();
+
+    window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname
+    );
+}
+
+// Start the app
+updateScreen();
 
 </script>
 
